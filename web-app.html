@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIC HFL Loan Amortization Schedule</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .loan-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .summary-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .summary-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .control-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .control-group input {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        th {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-right: 1px solid #34495e;
+        }
+        
+        td {
+            padding: 8px;
+            text-align: right;
+            border-bottom: 1px solid #e9ecef;
+            border-right: 1px solid #e9ecef;
+        }
+        
+        td:first-child {
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .prepayment-row {
+            background: #fff3cd !important;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .prepayment-row td {
+            font-weight: bold;
+            color: #856404;
+        }
+        
+        .total-row {
+            background: #d4edda;
+            font-weight: bold;
+            border-top: 2px solid #28a745;
+        }
+        
+        .number {
+            font-family: 'Courier New', monospace;
+        }
+        
+        .export-section {
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            animation: highlight 2s ease-in-out;
+        }
+        
+        @keyframes highlight {
+            0% { background: #ffeaa7; }
+            100% { background: #fff3cd; }
+        }
+        
+        .impact-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px;
+            padding: 20px;
+            background: #e8f5e8;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .impact-item {
+            text-align: center;
+        }
+        
+        .impact-label {
+            font-size: 0.9rem;
+            color: #155724;
+            margin-bottom: 5px;
+        }
+        
+        .impact-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LIC HFL Loan Amortization Schedule</h1>
+            <p>Loan Account: 111900005702 | Rameshwar Singh</p>
+        </div>
+        
+        <div class="loan-summary">
+            <div class="summary-item">
+                <div class="summary-label">Principal Amount</div>
+                <div class="summary-value number" id="principalAmount">₹9,26,180</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Interest Rate</div>
+                <div class="summary-value number">9.65%</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">EMI Amount</div>
+                <div class="summary-value number">₹9,470</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Loan End Date</div>
+                <div class="summary-value">June 2041</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total Interest</div>
+                <div class="summary-value number" id="totalInterest">₹12,84,832</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total Amount</div>
+                <div class="summary-value number" id="totalAmount">₹22,11,012</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Prepayment Amount (₹)</label>
+                <input type="number" id="prepaymentAmount" placeholder="50000" value="50000">
+            </div>
+            <div class="control-group">
+                <label>Prepayment Month</label>
+                <input type="month" id="prepaymentMonth" value="2026-03">
+            </div>
+            <div class="control-group">
+                <button class="btn" onclick="calculateSchedule()">Generate Schedule</button>
+                <button class="btn" onclick="addPrepayment()">Add Prepayment</button>
+            </div>
+            <div class="control-group">
+                <button class="btn btn-success" onclick="exportToCSV()">Export to CSV</button>
+                <button class="btn btn-success" onclick="exportToExcel()">Export to Excel</button>
+            </div>
+        </div>
+        
+        <div id="impactSummary" class="impact-summary" style="display: none;">
+            <div class="impact-item">
+                <div class="impact-label">Interest Saved</div>
+                <div class="impact-value number" id="interestSaved">₹0</div>
+            </div>
+            <div class="impact-item">
+                <div class="impact-label">Tenure Reduced</div>
+                <div class="impact-value" id="tenureReduced">0 months</div>
+            </div>
+            <div class="impact-item">
+                <div class="impact-label">New End Date</div>
+                <div class="impact-value" id="newEndDate">-</div>
+            </div>
+            <div class="impact-item">
+                <div class="impact-label">Total Savings</div>
+                <div class="impact-value number" id="totalSavings">₹0</div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="scheduleTable">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Date</th>
+                        <th>Opening Balance</th>
+                        <th>EMI</th>
+                        <th>Principal</th>
+                        <th>Interest</th>
+                        <th>Prepayment</th>
+                        <th>Closing Balance</th>
+                        <th>Cumulative Interest</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody">
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="export-section">
+            <p>Generated on: <span id="generatedDate"></span> | All amounts in INR</p>
+        </div>
+    </div>
+
+    <script>
+        let scheduleData = [];
+        let prepayments = [];
+        
+        // Initial loan parameters
+        const initialPrincipal = 926180.39;
+        const monthlyRate = 9.65 / 100 / 12;
+        const emi = 9470;
+        const startDate = new Date(2022, 5, 29); // June 29, 2022
+        
+        function formatCurrency(amount) {
+            return '₹' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+        
+        function formatDate(date) {
+            return date.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+        
+        function calculateSchedule() {
+            scheduleData = [];
+            let balance = initialPrincipal;
+            let currentDate = new Date(startDate);
+            let month = 1;
+            let cumulativeInterest = 0;
+            
+            while (balance > 1) {
+                const monthlyInterest = balance * monthlyRate;
+                const principalPayment = Math.min(emi - monthlyInterest, balance);
+                
+                // Check for prepayments
+                let prepaymentAmount = 0;
+                const monthKey = currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0');
+                const prepayment = prepayments.find(p => p.month === monthKey);
+                if (prepayment) {
+                    prepaymentAmount = prepayment.amount;
+                }
+                
+                const newBalance = Math.max(0, balance - principalPayment - prepaymentAmount);
+                cumulativeInterest += monthlyInterest;
+                
+                scheduleData.push({
+                    month: month,
+                    date: new Date(currentDate),
+                    openingBalance: balance,
+                    emi: balance <= emi ? balance + monthlyInterest : emi,
+                    principal: principalPayment,
+                    interest: monthlyInterest,
+                    prepayment: prepaymentAmount,
+                    closingBalance: newBalance,
+                    cumulativeInterest: cumulativeInterest
+                });
+                
+                balance = newBalance;
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                month++;
+                
+                if (month > 300) break; // Safety check
+            }
+            
+            renderSchedule();
+            updateSummary();
+            document.getElementById('generatedDate').textContent = new Date().toLocaleString();
+        }
+        
+        function renderSchedule() {
+            const tbody = document.getElementById('scheduleBody');
+            tbody.innerHTML = '';
+            
+            scheduleData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                if (row.prepayment > 0) {
+                    tr.classList.add('prepayment-row');
+                }
+                
+                tr.innerHTML = `
+                    <td>${row.month}</td>
+                    <td>${formatDate(row.date)}</td>
+                    <td class="number">${formatCurrency(row.openingBalance)}</td>
+                    <td class="number">${formatCurrency(row.emi)}</td>
+                    <td class="number">${formatCurrency(row.principal)}</td>
+                    <td class="number">${formatCurrency(row.interest)}</td>
+                    <td class="number">${row.prepayment > 0 ? formatCurrency(row.prepayment) : '-'}</td>
+                    <td class="number">${formatCurrency(row.closingBalance)}</td>
+                    <td class="number">${formatCurrency(row.cumulativeInterest)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Add total row
+            const totalRow = document.createElement('tr');
+            totalRow.classList.add('total-row');
+            const totalEMI = scheduleData.reduce((sum, row) => sum + row.emi, 0);
+            const totalPrincipal = scheduleData.reduce((sum, row) => sum + row.principal, 0);
+            const totalInterest = scheduleData.reduce((sum, row) => sum + row.interest, 0);
+            const totalPrepayment = scheduleData.reduce((sum, row) => sum + row.prepayment, 0);
+            
+            totalRow.innerHTML = `
+                <td colspan="3"><strong>TOTAL</strong></td>
+                <td class="number"><strong>${formatCurrency(totalEMI)}</strong></td>
+                <td class="number"><strong>${formatCurrency(totalPrincipal)}</strong></td>
+                <td class="number"><strong>${formatCurrency(totalInterest)}</strong></td>
+                <td class="number"><strong>${formatCurrency(totalPrepayment)}</strong></td>
+                <td></td>
+                <td class="number"><strong>${formatCurrency(totalInterest)}</strong></td>
+            `;
+            tbody.appendChild(totalRow);
+        }
+        
+        function addPrepayment() {
+            const amount = parseFloat(document.getElementById('prepaymentAmount').value);
+            const month = document.getElementById('prepaymentMonth').value;
+            
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid prepayment amount');
+                return;
+            }
+            
+            if (!month) {
+                alert('Please select a prepayment month');
+                return;
+            }
+            
+            // Remove existing prepayment for the same month
+            prepayments = prepayments.filter(p => p.month !== month);
+            
+            // Add new prepayment
+            prepayments.push({ month: month, amount: amount });
+            
+            calculateSchedule();
+            
+            // Show impact summary
+            document.getElementById('impactSummary').style.display = 'grid';
+            calculateImpact();
+        }
+        
+        function calculateImpact() {
+            // Calculate without prepayment
+            let balanceWithoutPrepayment = initialPrincipal;
+            let monthsWithoutPrepayment = 0;
+            let totalInterestWithoutPrepayment = 0;
+            
+            while (balanceWithoutPrepayment > 1) {
+                const monthlyInterest = balanceWithoutPrepayment * monthlyRate;
+                const principalPayment = Math.min(emi - monthlyInterest, balanceWithoutPrepayment);
+                totalInterestWithoutPrepayment += monthlyInterest;
+                balanceWithoutPrepayment -= principalPayment;
+                monthsWithoutPrepayment++;
+                if (monthsWithoutPrepayment > 300) break;
+            }
+            
+            // Calculate with prepayment
+            const totalInterestWithPrepayment = scheduleData.reduce((sum, row) => sum + row.interest, 0);
+            const monthsWithPrepayment = scheduleData.length;
+            
+            const interestSaved = totalInterestWithoutPrepayment - totalInterestWithPrepayment;
+            const tenureReduced = monthsWithoutPrepayment - monthsWithPrepayment;
+            const totalPrepaymentAmount = prepayments.reduce((sum, p) => sum + p.amount, 0);
+            
+            document.getElementById('interestSaved').textContent = formatCurrency(interestSaved);
+            document.getElementById('tenureReduced').textContent = `${tenureReduced} months`;
+            document.getElementById('totalSavings').textContent = formatCurrency(interestSaved);
+            
+            // Calculate new end date
+            const newEndDate = new Date(startDate);
+            newEndDate.setMonth(newEndDate.getMonth() + monthsWithPrepayment);
+            document.getElementById('newEndDate').textContent = formatDate(newEndDate);
+        }
+        
+        function updateSummary() {
+            const totalInterest = scheduleData.reduce((sum, row) => sum + row.interest, 0);
+            const totalAmount = initialPrincipal + totalInterest;
+            
+            document.getElementById('totalInterest').textContent = formatCurrency(totalInterest);
+            document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
+        }
+        
+        function exportToCSV() {
+            let csv = 'Month,Date,Opening Balance,EMI,Principal,Interest,Prepayment,Closing Balance,Cumulative Interest\n';
+            
+            scheduleData.forEach(row => {
+                csv += `${row.month},${formatDate(row.date)},${row.openingBalance.toFixed(2)},${row.emi.toFixed(2)},${row.principal.toFixed(2)},${row.interest.toFixed(2)},${row.prepayment.toFixed(2)},${row.closingBalance.toFixed(2)},${row.cumulativeInterest.toFixed(2)}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'LIC_HFL_Loan_Schedule.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        function exportToExcel() {
+            // Create a simple HTML table for Excel export
+            let excel = '<table border="1"><tr><th>Month</th><th>Date</th><th>Opening Balance</th><th>EMI</th><th>Principal</th><th>Interest</th><th>Prepayment</th><th>Closing Balance</th><th>Cumulative Interest</th></tr>';
+            
+            scheduleData.forEach(row => {
+                excel += `<tr><td>${row.month}</td><td>${formatDate(row.date)}</td><td>${row.openingBalance.toFixed(2)}</td><td>${row.emi.toFixed(2)}</td><td>${row.principal.toFixed(2)}</td><td>${row.interest.toFixed(2)}</td><td>${row.prepayment.toFixed(2)}</td><td>${row.closingBalance.toFixed(2)}</td><td>${row.cumulativeInterest.toFixed(2)}</td></tr>`;
+            });
+            
+            excel += '</table>';
+            
+            const blob = new Blob([excel], { type: 'application/vnd.ms-excel' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'LIC_HFL_Loan_Schedule.xls';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Initialize on page load
+        window.onload = function() {
+            calculateSchedule();
+        };
+    </script>
+</body>
+</html>
